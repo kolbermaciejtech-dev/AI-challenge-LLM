@@ -8,6 +8,8 @@ import os
 class DatabaseManager:
     def __init__(self, db_path: str = "data/app_portfolio.db"):
         self.db_path = db_path
+        # Ensure the directory exists
+        os.makedirs(os.path.dirname(self.db_path), exist_ok=True)
         self.init_database()
     
     def init_database(self):

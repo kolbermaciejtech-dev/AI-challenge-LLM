@@ -1,4 +1,5 @@
 import sqlite3
+import os
 from typing import List, Dict, Any
 from app.core.config import settings
 
@@ -6,6 +7,8 @@ from app.core.config import settings
 class DatabaseManager:
     def __init__(self, db_path: str = None):
         self.db_path = db_path or settings.database_url.replace("sqlite:///", "")
+        # Ensure the directory exists
+        os.makedirs(os.path.dirname(self.db_path), exist_ok=True)
     
     def get_connection(self):
         return sqlite3.connect(self.db_path)

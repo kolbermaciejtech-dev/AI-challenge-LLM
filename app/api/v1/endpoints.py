@@ -6,7 +6,11 @@ import pandas as pd
 from datetime import datetime
 
 from app.models.database import db_manager
-from app.services.llm_service import llm_service
+try:
+    from app.services.llm_service import llm_service
+except Exception as e:
+    print(f"Error importing LLM service: {e}")
+    from app.services.mock_llm_service import mock_llm_service as llm_service
 
 # Create FastAPI app
 api = FastAPI(title="Slack Analytics Bot - REST API", version="1.0.0")
@@ -22,8 +26,8 @@ async def health_check():
 async def get_database_schema():
     """Get database schema information"""
     try:
-        schema = db_manager.get_schema()
-        return {"schema": schema}
+        schema_info = db_manager.get_schema_info()
+        return {"schema": schema_info}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -35,8 +39,67 @@ async def execute_query(query_request: Dict[str, Any]):
         if not user_question:
             raise HTTPException(status_code=400, detail="Question is required")
         
-        response = llm_service.process_question(user_question)
-        return response
+        try:
+            response = llm_service.process_question(user_question)
+            return response
+        except Exception as llm_error:
+            # If LLM service fails, use a direct SQL query approach
+            print(f"LLM service error: {llm_error}")
+            print("Using direct SQL query approach")
+            
+            # Simple pattern matching for common queries
+            user_lower = user_question.lower()
+            sql_query = ""
+            
+            if "how many apps" in user_lower or "total apps" in user_lower:
+                sql_query = "SELECT COUNT(DISTINCT app_name) as total_apps FROM app_metrics"
+            elif "which country" in user_lower and "revenue" in user_lower:
+                sql_query = """
+                    SELECT country, 
+                           SUM(in_app_revenue + ads_revenue) as total_revenue
+                    FROM app_metrics 
+                    GROUP BY country 
+                    ORDER BY total_revenue DESC 
+                    LIMIT 10
+                """
+            else:
+                sql_query = """
+                    SELECT app_name, platform, 
+                           SUM(installs) as total_installs,
+                           SUM(in_app_revenue + ads_revenue) as total_revenue
+                    FROM app_metrics 
+                    GROUP BY app_name, platform 
+                    ORDER BY total_revenue DESC 
+                    LIMIT 10
+                """
+            
+            results = db_manager.execute_query(sql_query)
+            
+            if "how many apps" in user_lower:
+                message = f"We have {results[0]['total_apps']} apps in our portfolio."
+                return {
+                    "type": "simple",
+                    "message": message,
+                    "sql_query": sql_query,
+                    "data": results
+                }
+            else:
+                return {
+                    "type": "table",
+                    "message": "Here's the analysis of your query results.",
+                    "sql_query": sql_query,
+                    "data": results
+                }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/apps")
+async def get_apps():
+    """Get a list of all apps in the database"""
+    try:
+        sql_query = "SELECT DISTINCT app_name FROM app_metrics"
+        results = db_manager.execute_query(sql_query)
+        return {"apps": [result["app_name"] for result in results]}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

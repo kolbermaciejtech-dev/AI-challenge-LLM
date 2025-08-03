@@ -210,6 +210,60 @@ class LLMService:
         ]
         import random
         return random.choice(messages)
+        
+    def process_question(self, user_input: str) -> Dict[str, Any]:
+        """Process a natural language question and return a response"""
+        # Check if query is relevant
+        if not self.is_relevant_query(user_input):
+            return {
+                "type": "rejection",
+                "message": self.get_rejection_message(),
+                "data": []
+            }
+        
+        try:
+            # Generate SQL query
+            sql_query = self.generate_sql_query(user_input)
+            
+            # Execute query
+            from app.models.database import db_manager
+            results = db_manager.execute_query(sql_query)
+            
+            # Format response
+            response = self.format_response(user_input, results, sql_query)
+            
+            return response
+        except Exception as e:
+            print(f"Error in real LLM service: {str(e)}")
+            print("Falling back to mock LLM service")
+            try:
+                from app.services.mock_llm_service import mock_llm_service
+                # Use mock service
+                if not mock_llm_service.is_relevant_query(user_input):
+                    return {
+                        "type": "rejection",
+                        "message": mock_llm_service.get_rejection_message(),
+                        "data": []
+                    }
+                
+                sql_query = mock_llm_service.generate_sql_query(user_input)
+                from app.models.database import db_manager
+                results = db_manager.execute_query(sql_query)
+                response = mock_llm_service.format_response(user_input, results, sql_query)
+                return response
+            except Exception as mock_error:
+                return {
+                    "type": "error",
+                    "message": f"Error processing question: {str(e)}. Mock service error: {str(mock_error)}",
+                    "data": []
+                }
 
 # Initialize LLM service
-llm_service = LLMService()
+try:
+    llm_service = LLMService()
+    print("Using real LLM service with OpenAI")
+except Exception as e:
+    print(f"Error initializing real LLM service: {e}")
+    print("Falling back to mock LLM service")
+    from app.services.mock_llm_service import mock_llm_service
+    llm_service = mock_llm_service
