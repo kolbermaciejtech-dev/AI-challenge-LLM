@@ -6,7 +6,7 @@ from typing import List, Dict, Any
 import os
 
 class DatabaseManager:
-    def __init__(self, db_path: str = "app_portfolio.db"):
+    def __init__(self, db_path: str = "data/app_portfolio.db"):
         self.db_path = db_path
         self.init_database()
     

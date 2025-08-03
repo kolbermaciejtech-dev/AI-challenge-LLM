@@ -6,8 +6,8 @@ This demonstrates the bot functionality without Slack integration
 
 import os
 from dotenv import load_dotenv
-from database import db_manager
-from mock_llm_service import mock_llm_service
+from app.models.database import db_manager
+from app.services.mock_llm_service import mock_llm_service
 import pandas as pd
 
 # Load environment variables

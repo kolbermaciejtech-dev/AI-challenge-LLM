@@ -12,13 +12,14 @@ from fastapi import FastAPI, Request
 from fastapi.responses import FileResponse
 import uvicorn
 
-from database import db_manager
-from llm_service import llm_service
+from app.models.database import db_manager
+from app.services.llm_service import llm_service
+from app.core.config import settings
 
 # Initialize Slack app
 slack_app = App(
-    token=os.getenv("SLACK_BOT_TOKEN"),
-    signing_secret=os.getenv("SLACK_SIGNING_SECRET")
+    token=settings.slack_bot_token,
+    signing_secret=settings.slack_signing_secret
 )
 
 # Initialize FastAPI

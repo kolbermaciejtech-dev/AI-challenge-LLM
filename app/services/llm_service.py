@@ -9,18 +9,19 @@ import os
 import re
 from typing import Dict, Any, List, Tuple, Optional
 import json
-from database import db_manager
+from app.models.database import db_manager
+from app.core.config import settings
 
 class LLMService:
     def __init__(self):
         self.llm = ChatOpenAI(
             model="gpt-3.5-turbo",
             temperature=0,
-            api_key=os.getenv("OPENAI_API_KEY")
+            api_key=settings.openai_api_key
         )
         
         # Create SQL database connection for LangChain
-        self.db = SQLDatabase.from_uri("sqlite:///app_portfolio.db")
+        self.db = SQLDatabase.from_uri(settings.database_url)
         
         # Create SQL query chain
         self.sql_chain = create_sql_query_chain(self.llm, self.db)

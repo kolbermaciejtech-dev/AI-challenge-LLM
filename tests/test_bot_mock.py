@@ -15,7 +15,7 @@ def test_database():
     """Test database initialization and queries"""
     print("🔍 Testing Database...")
     try:
-        from database import db_manager
+        from app.models.database import db_manager
         
         # Test schema info
         schema = db_manager.get_schema_info()
@@ -38,7 +38,7 @@ def test_mock_llm_service():
     """Test mock LLM service functionality"""
     print("\n🤖 Testing Mock LLM Service...")
     try:
-        from mock_llm_service import mock_llm_service
+        from app.services.mock_llm_service import mock_llm_service
         
         # Test relevance detection
         relevant = mock_llm_service.is_relevant_query("how many apps do we have?")
@@ -60,8 +60,8 @@ def test_end_to_end_mock():
     """Test end-to-end query processing with mock service"""
     print("\n🔄 Testing End-to-End Flow (Mock)...")
     try:
-        from database import db_manager
-        from mock_llm_service import mock_llm_service
+        from app.models.database import db_manager
+        from app.services.mock_llm_service import mock_llm_service
         
         test_queries = [
             "how many apps do we have?",
@@ -101,7 +101,7 @@ def test_csv_export():
     print("\n📄 Testing CSV Export...")
     try:
         import pandas as pd
-        from database import db_manager
+        from app.models.database import db_manager
         
         # Get some sample data
         results = db_manager.execute_query("SELECT * FROM app_metrics LIMIT 10")
@@ -129,7 +129,7 @@ def test_slack_bot_components():
     print("\n🤖 Testing Slack Bot Components...")
     try:
         # Test session management
-        from slack_bot import SessionManager
+        from app.api.v1.slack_bot import SessionManager
         
         user_id = "test_user"
         session = SessionManager.get_session(user_id)

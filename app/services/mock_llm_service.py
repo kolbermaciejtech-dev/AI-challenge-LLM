@@ -5,7 +5,7 @@ This demonstrates the bot functionality without consuming API credits
 
 import re
 from typing import Dict, Any, List
-from database import db_manager
+from app.models.database import db_manager
 
 class MockLLMService:
     def __init__(self):

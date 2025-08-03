@@ -15,7 +15,7 @@ def test_database():
     """Test database initialization and queries"""
     print("🔍 Testing Database...")
     try:
-        from database import db_manager
+        from app.models.database import db_manager
         
         # Test schema info
         schema = db_manager.get_schema_info()
@@ -60,8 +60,8 @@ def test_end_to_end():
     """Test end-to-end query processing"""
     print("\n🔄 Testing End-to-End Flow...")
     try:
-        from database import db_manager
-        from llm_service import llm_service
+        from app.models.database import db_manager
+        from app.services.llm_service import llm_service
         
         test_queries = [
             "how many apps do we have?",
@@ -100,7 +100,7 @@ def test_csv_export():
     print("\n📄 Testing CSV Export...")
     try:
         import pandas as pd
-        from database import db_manager
+        from app.models.database import db_manager
         
         # Get some sample data
         results = db_manager.execute_query("SELECT * FROM app_metrics LIMIT 10")

@@ -17,8 +17,8 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Import our services
-from database import db_manager
-from mock_llm_service import mock_llm_service
+from app.models.database import db_manager
+from app.services.mock_llm_service import mock_llm_service
 
 # Initialize FastAPI
 app = FastAPI(title="Slack Analytics Bot - Standalone Demo")
